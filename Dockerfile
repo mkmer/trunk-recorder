@@ -1,4 +1,4 @@
-FROM ubuntu:22.04 AS builder
+FROM ubuntu:noble AS builder
 
 # Install docker for passing the socket to allow for intercontainer exec
 RUN apt-get update && \
@@ -32,6 +32,11 @@ RUN apt-get update && \
     pkg-config \
     wget \
     python3-six
+  
+
+# Fix the error message level for SmartNet
+
+RUN sed -i 's/log_level = debug/log_level = info/g' /etc/gnuradio/conf.d/gnuradio-runtime.conf
 
 # Compile librtlsdr-dev 2.0 for SDR-Blog v4 support and other updates
 # Ubuntu 22.04 LTS has librtlsdr 0.6.0
@@ -66,7 +71,8 @@ RUN cd /tmp && \
 
 # Compile gr-osmosdr ourselves using a fork with various patches included
 RUN cd /tmp && \
-  git clone https://github.com/racerxdl/gr-osmosdr.git && \
+  git clone https://github.com/mkmer/gr-osmosdr.git && \
+  #git clone https://github.com/osmocom/gr-osmosdr.git && \
   cd gr-osmosdr && \
   mkdir build && \
   cd build && \
@@ -80,7 +86,6 @@ RUN cd /tmp && \
   cd /tmp && \
   rm -rf gr-osmosdr
 
-
 WORKDIR /src
 
 COPY . .
@@ -90,10 +95,11 @@ WORKDIR /src/build
 RUN cmake .. && make -j$(nproc) && make DESTDIR=/newroot install
 
 #Stage 2 build
-FROM ubuntu:22.04
+FROM ubuntu:noble
 RUN apt-get update && apt-get install --no-install-recommends -y ca-certificates gr-funcube gr-iqbal curl wget rsync libboost-log1.74.0 \
-    libboost-chrono1.74.0 libgnuradio-digital3.10.1 libgnuradio-analog3.10.1 libgnuradio-filter3.10.1 libgnuradio-network3.10.1  \
-    libgnuradio-uhd3.10.1 libsoapysdr0.8 soapysdr0.8-module-all libairspyhf1 libfreesrp0 libxtrx0 sox fdkaac docker.io && \
+    libboost-chrono1.74.0 libgnuradio-digital3.10.9 libgnuradio-analog3.10.9 libgnuradio-filter3.10.9 libgnuradio-network3.10.9  \
+    libgnuradio-uhd3.10.9 libsoapysdr0.8 soapysdr0.8-module-all libairspyhf1 libfreesrp0 libxtrx0 sox fdkaac docker.io libboost-log1.83.0 \
+    libboost-chrono1.83.0 && \
     rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /newroot /
@@ -107,3 +113,5 @@ ENV HOME=/tmp
 
 #USER nobody
 CMD ["trunk-recorder", "--config=/app/config.json"]
+
+
