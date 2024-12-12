@@ -40,20 +40,20 @@ RUN sed -i 's/log_level = debug/log_level = info/g' /etc/gnuradio/conf.d/gnuradi
 
 # Compile librtlsdr-dev 2.0 for SDR-Blog v4 support and other updates
 # Ubuntu 22.04 LTS has librtlsdr 0.6.0
-RUN cd /tmp && \
-  git clone https://github.com/steve-m/librtlsdr.git && \
-  cd librtlsdr && \
-  mkdir build && \
-  cd build && \
-  cmake .. && \
-  make -j$(nproc) && \
-  make install && \
+#RUN cd /tmp && \
+#  git clone https://github.com/steve-m/librtlsdr.git && \
+#  cd librtlsdr && \
+#  mkdir build && \
+#  cd build && \
+#  cmake .. && \
+#  make -j$(nproc) && \
+#  make install && \
   # We need to install both in / and /newroot to use in this image
   # and to copy over to the final image
-  make DESTDIR=/newroot install && \
-  ldconfig && \
-  cd /tmp && \
-  rm -rf librtlsdr
+#  make DESTDIR=/newroot install && \
+#  ldconfig && \
+#  cd /tmp && \
+#  rm -rf librtlsdr
 
 # Compile librtlsdr-dev 2.0 for SDR-Blog v4 support and other updates
 # Ubuntu 22.04 LTS has librtlsdr 0.6.0
@@ -65,6 +65,7 @@ RUN cd /tmp && \
   cmake .. && \
   make -j$(nproc) && \
   make install && \
+  make DESTDIR=/newroot install && \
   ldconfig && \
   cd /tmp && \
   rm -rf librtlsdr
